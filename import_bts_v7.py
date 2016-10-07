@@ -7,8 +7,19 @@ import os, sys
 import datetime
 import psycopg2
 import xlrd
+import ConfigParser
 
+confile=r"C:\Users\thowingt\Documents\Code\python\shingle_demand.cfg"
 
+def get_params():
+    config=ConfigParser.RawConfigParser()
+    config.read(confile)
+    dbn=config.get('database parameters','database')
+    usn=config.get('database parameters','user')
+    hn=config.get('database parameters', 'host')
+    pw=config.get('database parameters', 'password')
+    return [dbn, usn, pw, hn]
+    
 def get_bts_file(in_date):
     # assumes in_date is of the form YYYYMMDD
     # returns path to target file
@@ -117,9 +128,11 @@ def cleanup_bts_import_table(cur, conn):
 
 def main_process(yesterday):
     yesterday_bts_file=get_bts_file(yesterday)
+    dbn, usn, pw, hn=get_params()
 
     #conn = psycopg2.connect("dbname='shingle_demand' user='shingle_demand'password='b@dweather!' host='localhost'")
-    conn = psycopg2.connect("dbname='roof_hail' user='postgres' host='localhost'")
+    #conn = psycopg2.connect("dbname='roof_hail' user='postgres' host='localhost'")
+    conn = psycopg2.connect("dbname={0} user={1} password={2} host={3}".format(dbn, usn, pw, hn))
     cur=conn.cursor()    
     read_bts(yesterday_bts_file, cur, conn)
     transform_bts_import_table(cur, conn)
