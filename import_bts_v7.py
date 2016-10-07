@@ -128,12 +128,11 @@ def cleanup_bts_import_table(cur, conn):
 
 def main_process(yesterday):
     yesterday_bts_file=get_bts_file(yesterday)
+    
     dbn, usn, pw, hn=get_params()
-
-    #conn = psycopg2.connect("dbname='shingle_demand' user='shingle_demand'password='b@dweather!' host='localhost'")
-    #conn = psycopg2.connect("dbname='roof_hail' user='postgres' host='localhost'")
     conn = psycopg2.connect("dbname={0} user={1} password={2} host={3}".format(dbn, usn, pw, hn))
-    cur=conn.cursor()    
+    cur=conn.cursor()
+    
     read_bts(yesterday_bts_file, cur, conn)
     transform_bts_import_table(cur, conn)
     update_bts_rpts(cur, conn)
