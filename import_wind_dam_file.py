@@ -2,6 +2,7 @@ import os, sys
 import datetime
 import psycopg2
 import xlrd
+import ConfigParser
 
 
 # The date in the filename is the day after the "data" date.  It's 6am GMT day x to 6am GMT day y,
@@ -13,6 +14,16 @@ import xlrd
 # If you need to run it for a day in the past, e.g. 20160227, then run it with the argument 20160228.
 
 
+confile=r"C:\Users\thowingt\Documents\Code\python\shingle_demand.cfg"
+
+def get_params():
+    config=ConfigParser.RawConfigParser()
+    config.read(confile)
+    dbn=config.get('database parameters','database')
+    usn=config.get('database parameters','user')
+    hn=config.get('database parameters', 'host')
+    pw=config.get('database parameters', 'password')
+    return [dbn, usn, pw, hn]
 
 def get_dam_file(in_date):
     # assumes in_date is of the form YYYYMMDD
@@ -55,7 +66,9 @@ def wind_importer(today):
     sheet1=book.sheet_by_index(0)
 
     date_of_wind=get_date_of_wind(today)
-    conn = psycopg2.connect("dbname='roof_hail' user='postgres' host='localhost'")
+    
+    dbn, usn, pw, hn=get_params()
+    conn = psycopg2.connect("dbname={0} user={1} password={2} host={3}".format(dbn, usn, pw, hn))
     cur=conn.cursor()
     read_info(sheet1, date_of_wind, conn, cur)
     conn.close()
