@@ -2,6 +2,7 @@ import os, sys
 import datetime
 import psycopg2
 import xlrd
+import ConfigParser
 
 # The goal is to change this so that it updates the database separately
 # for each line of input directly from the xls without going thru the csv
@@ -14,6 +15,16 @@ import xlrd
 ######  CHANGE THIS TO GO LIVE  ##########
 # don't need this anymore... working_directory=r"D:\Shingle_Demand_QC\input_reports"
 
+confile=r"C:\Users\thowingt\Documents\Code\python\shingle_demand.cfg"
+
+def get_params():
+    config=ConfigParser.RawConfigParser()
+    config.read(confile)
+    dbn=config.get('database parameters','database')
+    usn=config.get('database parameters','user')
+    hn=config.get('database parameters', 'host')
+    pw=config.get('database parameters', 'password')
+    return [dbn, usn, pw, hn]
 
 def get_dam_file(in_date):
     #assumes in_date is of the form YYYYMMDD
@@ -66,7 +77,10 @@ def main_process(yesterday):
 
     # read the sheet and write contents to database
     date_of_hail=get_date_of_hail(yesterday)
-    conn = psycopg2.connect("dbname='roof_hail' user='postgres' host='localhost'")
+
+    dbn, usn, pw, hn=get_params()
+    conn = psycopg2.connect("dbname={0} user={1} password={2} host={3}".format(dbn, usn, pw, hn))
+    
     cur=conn.cursor()
     read_info(sheet1, date_of_hail, conn, cur)
     conn.close()
